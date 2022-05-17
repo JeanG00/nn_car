@@ -16,6 +16,7 @@ class Car {
       this.maxSpeed = 3;
       this.sensor = new Sensor(this);
       this.color = "blue";
+      this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4]);
     } else {
       this.color = "red";
       this.maxSpeed = 2;
@@ -30,7 +31,17 @@ class Car {
       this.polygon = this._createPolygon();
       this.damaged = this._assessDamage(roadBorders, traffic);
     }
-    if (this.sensor) this.sensor.update(roadBorders, traffic);
+    if (this.sensor) {
+      this.sensor.update(roadBorders, traffic);
+      const offsets = this.sensor.readings.map((s) =>
+        s == null ? 0 : 1 - s.offset
+      );
+      const outputs = NeuralNetwork.feedForward(offsets, this.brain);
+      this.control.forward = outputs[0];
+      this.control.left = outputs[1];
+      this.control.right = outputs[2];
+      this.control.reverse = outputs[3];
+    }
   }
 
   _assessDamage(roadBorders, traffic) {
