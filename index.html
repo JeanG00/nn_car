@@ -7,13 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Self Driving Card</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
 <body>
     <canvas id="carCanvas"></canvas>
     <div id="vertialButtons">
-        <button onclick="save()">💾</button>
-        <button onclick="discard()">🗑️</button>
+        <button onclick="save()" title="Save">💾</button>
+        <button onclick="discard()" title="Clear">🗑️</button>
+        <button onclick="stop()" title="Stop">T</button>
     </div>
     <canvas id="networkCanvas"></canvas>
     <script src="utils.js"></script>
@@ -23,6 +25,7 @@
     <script src="sensor.js"></script>
     <script src="control.js"></script>
     <script src="car.js"></script>
+    <script src="alpha.js"></script>
     <script src="main.js"></script>
 </body>
 

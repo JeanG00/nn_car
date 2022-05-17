@@ -1,14 +1,17 @@
 const carCanvas = document.getElementById("carCanvas");
 carCanvas.width = 200;
 const networkCanvas = document.getElementById("networkCanvas");
-networkCanvas.width = 300;
+networkCanvas.width = 500;
+
+// TODO: set usTrainData to false if you want to start fresh
+const useTrainData = true;
 
 const carCtx = carCanvas.getContext("2d");
 const networkCtx = networkCanvas.getContext("2d");
 const road = new Road(carCanvas.width / 2, carCanvas.width * 0.9);
-const N = 500;
+// increate N if you want to progress faster
+const N = 10;
 const cars = generateCars(N);
-let alphaCar = cars[0];
 if (localStorage.getItem("alphaCar")) {
   for (let i = 0; i < cars.length; i++) {
     cars[i].brain = JSON.parse(localStorage.getItem("alphaCar"));
@@ -16,17 +19,28 @@ if (localStorage.getItem("alphaCar")) {
       NeuralNetwork.mutate(cars[i].brain, 0.2);
     }
   }
+} else if (useTrainData && ALPHA) {
+  for (let i = 0; i < cars.length; i++) {
+    cars[i].brain = _.cloneDeep(ALPHA);
+    if (i != 0) {
+      NeuralNetwork.mutate(cars[i].brain, 0.2);
+    }
+  }
 }
+let alphaCar = cars[0];
 const traffic = [
-  new Car(road.getLaneCenter(1), -100, 30, 50, "DUMMY"),
-  new Car(road.getLaneCenter(0), -300, 30, 50, "DUMMY"),
-  new Car(road.getLaneCenter(2), -300, 30, 50, "DUMMY"),
-  new Car(road.getLaneCenter(0), -500, 30, 50, "DUMMY"),
-  new Car(road.getLaneCenter(1), -500, 30, 50, "DUMMY"),
-  new Car(road.getLaneCenter(1), -700, 30, 50, "DUMMY"),
-  new Car(road.getLaneCenter(2), -700, 30, 50, "DUMMY"),
+  new Car(road.getLaneCenter(1), -100, 30, 50, "DUMMY", getRandomColor()),
+  new Car(road.getLaneCenter(0), -300, 30, 50, "DUMMY", getRandomColor()),
+  new Car(road.getLaneCenter(2), -300, 30, 50, "DUMMY", getRandomColor()),
+  new Car(road.getLaneCenter(0), -500, 30, 50, "DUMMY", getRandomColor()),
+  new Car(road.getLaneCenter(1), -500, 30, 50, "DUMMY", getRandomColor()),
+  new Car(road.getLaneCenter(1), -700, 30, 50, "DUMMY", getRandomColor()),
+  new Car(road.getLaneCenter(2), -700, 30, 50, "DUMMY", getRandomColor()),
+  new Car(road.getLaneCenter(0), -900, 30, 50, "DUMMY", getRandomColor()),
+  new Car(road.getLaneCenter(2), -1000, 30, 50, "DUMMY", getRandomColor()),
 ];
 
+let frame = null;
 animate();
 
 function save() {
@@ -35,6 +49,10 @@ function save() {
 
 function discard() {
   localStorage.removeItem("alphaCar");
+}
+
+function stop() {
+  if (frame) cancelAnimationFrame(frame);
 }
 
 function generateCars(num) {
@@ -70,7 +88,7 @@ function animate(time) {
   alphaCar.draw(carCtx, "alpha");
   carCtx.globalAlpha = 1;
   carCtx.restore();
-  networkCtx.lineDashOffset = time / 50;
+  networkCtx.lineDashOffset = -time / 50;
   Visualizer.drawNetwork(networkCtx, alphaCar.brain);
-  requestAnimationFrame(animate);
+  frame = requestAnimationFrame(animate);
 }

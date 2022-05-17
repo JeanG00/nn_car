@@ -1,5 +1,5 @@
 class Car {
-  constructor(x, y, width, height, model) {
+  constructor(x, y, width, height, model, color = "blue") {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -7,19 +7,30 @@ class Car {
 
     this.speed = 0;
     this.acceleration = 0.2;
-    this.maxSpeed = 3;
+    this.maxSpeed = 2;
     this.friction = 0.05;
     this.angle = 0;
     this.polygon = [];
     this.damaged = false;
+    this.color = color;
+    this.img = new Image();
+    this.img.src = "car.png";
+    this.mask = document.createElement("canvas");
+    this.mask.width = width;
+    this.mask.height = height;
+    const maskCtx = this.mask.getContext("2d");
+    this.img.onload = () => {
+      maskCtx.fillStyle = color;
+      maskCtx.rect(0, 0, this.width, this.height);
+      maskCtx.fill();
+
+      maskCtx.globalCompositeOperation = "destination-atop";
+      maskCtx.drawImage(this.img, 0, 0, this.width, this.height);
+    };
     if (model == "AI") {
       this.maxSpeed = 3;
       this.sensor = new Sensor(this);
-      this.color = "blue";
       this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4]);
-    } else {
-      this.color = "red";
-      this.maxSpeed = 2;
     }
 
     this.control = new Control(model);
@@ -37,6 +48,7 @@ class Car {
         s == null ? 0 : 1 - s.offset
       );
       const outputs = NeuralNetwork.feedForward(offsets, this.brain);
+
       this.control.forward = outputs[0];
       this.control.left = outputs[1];
       this.control.right = outputs[2];
@@ -118,19 +130,27 @@ class Car {
   }
 
   draw(ctx, alpha = false) {
-    if (this.damaged) {
-      ctx.fillStyle = "gray";
-    } else {
-      ctx.fillStyle = this.color;
-    }
-    ctx.beginPath();
-    const start = this.polygon[0] || { x: this.x, y: this.y };
-    ctx.moveTo(start.x, start.y);
-    for (let i = 0; i < this.polygon.length; i++) {
-      ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
-    }
-    ctx.fill();
-
     if (this.sensor && alpha) this.sensor.draw(ctx);
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(-this.angle);
+    if (!this.damaged) {
+      ctx.drawImage(
+        this.mask,
+        -this.width / 2,
+        -this.height / 2,
+        this.width,
+        this.height
+      );
+      ctx.globalCompositeOperation = "multiply";
+    }
+    ctx.drawImage(
+      this.img,
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height
+    );
+    ctx.restore();
   }
 }
