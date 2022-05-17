@@ -1,11 +1,19 @@
 class Control {
-  constructor() {
+  constructor(model) {
     this.forward = false;
     this.left = false;
     this.right = false;
     this.reverse = false;
 
-    this._addKeyboardListener();
+    switch(model) {
+      case "AI":
+        this._addKeyboardListener();
+        break;
+      case "DUMMY":
+        this.forward = true;
+        break;
+    }
+
   }
 
   _addKeyboardListener() {

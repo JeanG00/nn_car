@@ -1,5 +1,5 @@
 class Car {
-  constructor(x, y, width, height) {
+  constructor(x, y, width, height, model) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -12,23 +12,35 @@ class Car {
     this.angle = 0;
     this.polygon = [];
     this.damaged = false;
+    if (model == "AI") {
+      this.maxSpeed = 3;
+      this.sensor = new Sensor(this);
+      this.color = "blue";
+    } else {
+      this.color = "red";
+      this.maxSpeed = 2;
+    }
 
-    this.sensor = new Sensor(this);
-    this.control = new Control();
+    this.control = new Control(model);
   }
 
-  update(roadBorders) {
+  update(roadBorders, traffic) {
     if (!this.damaged) {
       this._move();
       this.polygon = this._createPolygon();
-      this.damaged = this._assessDamage(roadBorders);
+      this.damaged = this._assessDamage(roadBorders, traffic);
     }
-    this.sensor.update(roadBorders);
+    if (this.sensor) this.sensor.update(roadBorders, traffic);
   }
 
-  _assessDamage(roadBorders) {
+  _assessDamage(roadBorders, traffic) {
     for (let i = 0; i < roadBorders.length; i++) {
       if (polyIntersect(this.polygon, roadBorders[i])) {
+        return true;
+      }
+    }
+    for (let i = 0; i < traffic.length; i++) {
+      if (polyIntersect(this.polygon, traffic[i].polygon)) {
         return true;
       }
     }
@@ -98,7 +110,7 @@ class Car {
     if (this.damaged) {
       ctx.fillStyle = "gray";
     } else {
-      ctx.fillStyle = "black";
+      ctx.fillStyle = this.color;
     }
     ctx.beginPath();
     const start = this.polygon[0] || { x: this.x, y: this.y };
@@ -108,6 +120,6 @@ class Car {
     }
     ctx.fill();
 
-    this.sensor.draw(ctx);
+    if (this.sensor) this.sensor.draw(ctx);
   }
 }
